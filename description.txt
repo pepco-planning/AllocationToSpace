@@ -1,0 +1,5 @@
+Pełna zawartość pliku "StoreTarget.csv": "c:\Mariusz\#Marcin Nowak\Python projects\finished"
+Plik ten zawiera 64 789 712 wierszy
+Plik "StoreTarget1000.csv" zawiera pierwsze 1000 wierszy i jest tylko przykładem.
+Pełna tabela znajduje się w SQL Management Studio: [Central_Planning].[ats].[StoreStockTargets] oraz na dysku: \\10.2.5.140\zasoby\Planowanie\Space Planning\Allo To Space model.
+Model wraz z plikiem .bat jest wrzucony na serwerze planapps-p (pulpit zdalny) w lokalizacji: C:\Users\mborycki\Desktop\Python Projects\Batch\ExecuteModel.bat"
