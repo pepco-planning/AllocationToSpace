@@ -12,17 +12,13 @@ import tqdm
 import shutil
 from decimal import *
 
-
 print("### AlloToSpace v 202109 ###")
 print("start:", datetime.datetime.now())
 
-
 targetValue_fileName = "StoreTarget.csv"
-# targetValue_filePath_original = r"\\10.2.5.140\zasoby\Planowanie\Space Planning\Allo To Space model"
-targetValue_filePath = r"c:\Mariusz"
+targetValue_filePath = r"\\10.2.5.140\zasoby\Planowanie\Space Planning\Allo To Space model"
 targetValue_filePathWithName = targetValue_filePath + "\\" + targetValue_fileName
-centralPlanning_tableName = "ats.StoreStockTargets"
-
+centralPlanning_tableName = "ats.StoreStockTargets" # testowy: ats.StoreStockTargets_test
 
 # raw data downloader
 hierarchy = dd.dataFrameFromTabular(daxQ.hierarchyTable())
@@ -30,16 +26,12 @@ hierarchy.columns = ["Department", "Category", "CategoryID"]
 hierarchy = hierarchy[hierarchy.Department != "a Dump codes"]
 
 departments = hierarchy.Department.unique()
-
-
 weeks = dd.dataFrameFromTabular(daxQ.weekTable())
 weeks.columns = ["Week", "StartDate"]
 weeks.Week = weeks.Week.astype("int32")
 
-
 stores = dd.dataFrameFromTabular(daxQ.storeList())
 stores.columns = ["Store"]
-
 
 hierarchyMap = pd.read_sql(sqlQ.hierarchyMap(), sc.centralPlanningDB_connect())
 mods_Furniture = pd.read_sql(sqlQ.mods_Furniture(), sc.centralPlanningDB_connect())
@@ -48,19 +40,15 @@ mods_HotSpot = pd.read_sql(sqlQ.mods_HotSpot(), sc.centralPlanningDB_connect())
 mods_Tops = pd.read_sql(sqlQ.mods_Tops(), sc.centralPlanningDB_connect())
 retailPerMod = pd.read_sql(sqlQ.retailPerMod(), sc.centralPlanningDB_connect())
 
-
 sumNoOfFurniture = md.dataFrameFromMDX(mdxQ.numberOfFurniture())
 sumNoOfFurniture.columns = ["Store", "VMDepartment", "FurnitureType", "SumNoOfFurniture"]
 sumNoOfFurniture.SumNoOfFurniture = sumNoOfFurniture.SumNoOfFurniture.apply(lambda x: float(str(x).replace(',','.')))
-
 
 # policz sprzedaz dla zeszłego roku i zamien weeki na obecne, zeby je wykorzystac do policzenia targetu na ten rok
 salesMix = dd.dataFrameFromTabular(daxQ.salesMixTable(weeks.Week.min() - 100, weeks.Week.max() - 100))
 salesMix.columns = ["Department", "Category", "Week", "SalesValue", "CategoryMix"]
 salesMix.Week = salesMix.Week.apply(lambda week: week + 100)
 salesMix.Week = salesMix.Week.astype("int32")
-# /raw data downloader
-
 
 # join tables
 extraMods = pd.DataFrame(data=departments, columns=["Department"])
@@ -73,7 +61,6 @@ extraMods["ExtraDisplayMods"] = extraMods.DisplayModsES + extraMods.DisplayModsH
 extraMods.drop(["DisplayModsES", "DisplayModsHS", "DisplayModsT"], axis=1, inplace=True)
 extraMods = extraMods.groupby(["Department", "Week"], as_index=True)["ExtraDisplayMods"].agg("sum")
 
-
 furnitureMods = sumNoOfFurniture.merge(hierarchyMap, on="VMDepartment", how="left")
 furnitureMods.drop("VMDepartment", axis=1, inplace=True)
 furnitureMods = furnitureMods.merge(mods_Furniture, on="FurnitureType", how="left")
@@ -82,8 +69,6 @@ furnitureMods.DisplayMods.fillna(0, inplace=True)
 furnitureMods["DisplayModsFM"] = furnitureMods.SumNoOfFurniture.astype('float64') * furnitureMods.DisplayMods
 furnitureMods.drop(["SumNoOfFurniture", "DisplayMods"], axis=1, inplace=True)
 furnitureMods = furnitureMods.groupby(["Store", "Department"], as_index=True)["DisplayModsFM"].agg("sum")
-# /join tables
-
 
 resultTable = pd.DataFrame(columns=["TargetStartDate",
                                     "SiteCode",
@@ -98,9 +83,7 @@ if os.path.isfile(targetValue_fileName):
     os.remove(targetValue_fileName)
 resultTable.to_csv(targetValue_fileName, mode="a+", index=False, header=True)
 
-
 weekHierarchy = hierarchy.merge(weeks, how="cross")
-
 for store in tqdm.tqdm(stores.Store):
     weekHierarchyStore = weekHierarchy
     weekHierarchyStore["Store"] = store
@@ -119,12 +102,9 @@ for store in tqdm.tqdm(stores.Store):
     weekHierarchyStore.drop(["DepartmentTarget", "CategoryMix"], axis=1, inplace=True)
     weekHierarchyStore["MinTargetValue"] = 0.9 * weekHierarchyStore.TargetValue
     weekHierarchyStore["MaxTargetValue"] = 1.1 * weekHierarchyStore.TargetValue
-
     colsToRound = ["TargetValue", "MinTargetValue", "MaxTargetValue"]
     weekHierarchyStore[colsToRound] = weekHierarchyStore[colsToRound].round().astype(int)
-
     weekHierarchyStore["PEP_ModifiedDateTime"] = datetime.datetime.today().strftime("%Y-%m-%d")
-
     weekHierarchyStore[["StartDate",
                         "Store",
                         "CategoryID",
@@ -135,11 +115,9 @@ for store in tqdm.tqdm(stores.Store):
                         "DisplayModsFM",
                         "PEP_ModifiedDateTime"]].to_csv(targetValue_fileName, mode="a", index=False, header=False)
 
-
 if os.path.isfile(targetValue_filePathWithName):
     os.remove(targetValue_filePathWithName)
 shutil.copy(targetValue_fileName, targetValue_filePathWithName)
-
 
 # upload data
 centralPlanningDB_conn = sc.centralPlanningDB_connect()
@@ -150,6 +128,4 @@ centralPlanningDB_cursor.commit()
 centralPlanningDB_conn.close()
 # /upload data
 
-
 print("Koniec:", datetime.datetime.now())
-

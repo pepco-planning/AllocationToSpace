@@ -1,1 +1,1 @@
-# Allocation to SpaceDescription of the model will be added soon
+# Allocation to SpaceThe model counts:- how much space is available on the shelves, - how much are the items from the given categories worth, - how many products can be allocated on the shelves. This tool transfers the converted data into the database 
