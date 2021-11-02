@@ -1,5 +1,20 @@
-Pełna zawartość pliku "StoreTarget.csv": "c:\Mariusz\#Marcin Nowak\Python projects\finished"
-Plik ten zawiera 64 789 712 wierszy
-Plik "StoreTarget1000.csv" zawiera pierwsze 1000 wierszy i jest tylko przykładem.
-Pełna tabela znajduje się w SQL Management Studio: [Central_Planning].[ats].[StoreStockTargets] oraz na dysku: \\10.2.5.140\zasoby\Planowanie\Space Planning\Allo To Space model.
-Model wraz z plikiem .bat jest wrzucony na serwerze planapps-p (pulpit zdalny) w lokalizacji: C:\Users\mborycki\Desktop\Python Projects\Batch\ExecuteModel.bat"
+﻿Log: \\10.2.5.140\zasoby\Planowanie\PERSONAL FOLDERS\Mariusz Borycki\Python Projects\ 
+CSV: \\10.2.5.140\zasoby\Planowanie\Space Planning\Allo To Space model\
+
+
+BAT:
+cd "C:\Users\mborycki\Desktop\Python Projects\AlloToSpace v202109"
+echo ########################################### >> "C:\Users\mborycki\Desktop\Python Projects\Batch\Log.txt"
+echo START %date%_%time% >> "C:\Users\mborycki\Desktop\Python Projects\Batch\Log.txt"
+AlloToSpace.exe
+echo FINISH %date%_%time% >> "C:\Users\mborycki\Desktop\Python Projects\Batch\Log.txt"
+
+
+cd "C:\Users\mborycki\Desktop\Python Projects\Batch\"
+CopyLogToSharedDisk.bat
+
+Check:
+In Microsoft SQL Server: SharedSQL01-P > table > [Central_Planning].[ats].[StoreStockTargets] 
+check dates (last Moday) and amount of rows: should be around 65 882 492
+Model wraz z plikiem .bat jest wrzucony na serwerze planapps-p 
+(pulpit zdalny) w lokalizacji: C:\Users\mborycki\Desktop\Python Projects\Batch\ExecuteModel.bat"
